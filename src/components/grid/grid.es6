@@ -22,52 +22,86 @@ class Grid extends React.Component {
         //     props.getAgGridModule()
         // }
         this.state = { columnDefs: [
-            {headerName: "Group", cellRenderer: 'group'},
+            // the comparator works for every nested grouped column:
+            {headerName: "Product / Destination", cellRenderer: 'group', comparator: this.sortGroupBy.bind(this), checkboxSelection: true},
+            // {headerName: "Product / Destination", cellRenderer: 'group', sort: 'asc'},
             // {headerName: 'Product', rowGroupIndex: 0, field: 'commodityId', hide: true},
             {headerName: 'Product', rowGroupIndex: 0, valueGetter: this.gridGetCommodityName.bind(this), hide: true},
             // {headerName: 'Country', field: 'deliveryCountryCode'},
             {headerName: 'Country', rowGroupIndex: 1, valueGetter: this.gridGetCountryName.bind(this), hide: true},
-            {headerName: 'Region', field: 'deliveryRegionCode'},
-            // {headerName: 'Region', valueGetter: this.gridGetRegionName.bind(this)},
-            {headerName: 'City', field: 'deliveryCity'},
-            // {headerName: 'Description', valueGetter: this.gridCalcDescription.bind(this)},
+            // {headerName: 'Region', field: 'deliveryRegionCode'},
+            {headerName: 'Region', valueGetter: this.gridGetRegionName.bind(this), sort: 'asc'},
+            {headerName: 'City', field: 'deliveryCity', sort: 'asc'},
             {headerName: 'Incoterm', field: 'incoterm'},
-            {headerName: 'Quantity', field: 'qty'},
+            {headerName: 'Description', valueGetter: this.gridCalcDescription.bind(this), sort: 'asc'},
+            {headerName: 'Quantity', field: 'qty', cellStyle: {'text-align': 'right'}},
             {headerName: 'Unit Price', field: 'pricePerUnit'},
             {headerName: 'Delivery Price', field: 'deliveryPrice'},
-            // {headerName: 'Total', valueGetter: this.gridCalcTotal.bind(this)},
+            {headerName: 'Total', valueGetter: this.gridCalcTotal.bind(this)},
             {headerName: 'Prepay %', field: 'prepayPercent'},
             {headerName: 'Terms', field: 'paymentTerms'},
             {headerName: 'Mfr name', field: 'mfrName'},
             {headerName: 'Mfr code', field: 'productCode'},
-            // {headerName: 'Country of Manufacture', valueGetter: this.gridGetOriginName.bind(this)}
+            {headerName: 'Country of Manufacture', valueGetter: this.gridGetOriginName.bind(this)}
         ],
             rowData: Object.values(this.props.tenders)}
         // this.state = { columnDefs: [{headerName: 'Product', field: 'product'}, {headerName: 'Country', field: 'country'}],
         //                 rowData: [{product: 'IOL', country: 'US'}, {product: 'Suture', country: 'IN'}]}
     }
 
+    sortGroupBy(valueA, valueB, nodeA, nodeB, isInverted) {
+        // note Aland Islands sorted after Bahamas, is this because
+        console.log(`==== valueA: ${valueA}, valueB: ${valueB}, isInverted: ${isInverted}`)
+        console.log("==== nodeA: ", nodeA)
+        console.log("==== nodeB: ", nodeB)
+        let answer = 0
+        if (nodeA.key < nodeB.key) {
+            answer = -1
+        } else {
+            answer = 1
+        }
+        console.log("==== sortGroupBy returning ", answer)
+        return answer
+    }
+
     gridGetCountryName(gridParams) {
         console.log("==== gridParams getCountryName = ", gridParams)
+        if (gridParams.data == null) {
+            return ''
+        }
         return this.getCountryName(gridParams.data.deliveryCountryCode)
     }
 
     gridGetOriginName(gridParams) {
         console.log("==== gridParams getOriginName = ", gridParams)
+        if (gridParams.data == null) {
+            return ''
+        }
         return this.getCountryName(gridParams.data.originCountryCode)
     }
 
     gridGetRegionName(gridParams) {
         console.log("==== gridParams getRegionName = ", gridParams)
+        if (gridParams.data == null) {  // this may be necessary because it's called for grouped rows that don't display a region?
+            return ''
+        }
         return this.getRegionName(gridParams.data.deliveryCountryCode, gridParams.data.deliveryRegionCode)
     }
 
     gridGetCommodityName(gridParams) {
+        if (gridParams.data == null) {
+            return ''
+        }
         return this.getCommodityName(gridParams.data.commodityId)
     }
 
     getCountryName(countryCode) {
-        return window.geoLookup[countryCode]['name']
+        const country = window.geoLookup[countryCode]
+        if (country) {
+            return window.geoLookup[countryCode]['name']
+        } else {
+            return `no country code '${countryCode}'`
+        }
     }
 
     getRegionName(countryCode, regionCode) {
@@ -80,14 +114,19 @@ class Grid extends React.Component {
 
     gridCalcDescription(gridParams) {
         let description = ''
-        const match = gridParams.data.description.match(/\/\s*(.*)$/)  // extract description after first /
-        if (match) {
-            description = match[1]
+        if (gridParams.data) {
+            const match = gridParams.data.description.match(/\/\s*(.*)$/)  // extract description after first /
+            if (match) {
+                description = match[1]
+            }
         }
         return description
     }
 
     gridCalcTotal(gridParams) {
+        if (gridParams.data == null) {
+            return ''
+        }
         const qty = parseInt(gridParams.data.qty)
         const unitPrice = parseFloat(gridParams.data.pricePerUnit)
         let deliveryPrice
@@ -103,6 +142,7 @@ class Grid extends React.Component {
         console.log("==== ag-grid ready, params = ", params)
         this.api = params.api
         this.columnApi = params.columnApi
+        this.columnApi.autoSizeColumns(this.columnApi.getAllColumns())
     }
 
     render() {
@@ -142,6 +182,7 @@ class Grid extends React.Component {
                     enableSorting={true}
                     enableFilter={true}
                     rowHeight="22"
+                    enableColResize={true}
                 />
             </div>)
         }
