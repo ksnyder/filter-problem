@@ -114,8 +114,8 @@ export function fetchTenders() {
             .get(url)
             .set('Authorization', 'Bearer ' + idToken)
             .end(function (err, res) {
-                console.log("fetch bidRequests res = ", res)
-                console.log("fetch bidRequests res.text = ", res.text)
+                console.log("fetch tenders res = ", res)
+                console.log("fetch tenders res.text = ", res.text)
                 const payload = JSON.parse(res.text)
                 dispatch(setTenders(payload.tenders))
                 dispatch(setTenderTree(payload.tenderTree))
