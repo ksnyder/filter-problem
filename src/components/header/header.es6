@@ -33,6 +33,11 @@ class Header extends React.Component {
         // Add callback for lock `authenticated` event, it appears lock can take multiple callbacks for the same event
         //#TODO: can this wait on the call made at app load to be sure authSvc has been set on window -- perhaps have a separate component including login button that only displays when call has completed
         this.authSvc.getLock().on('authenticated', this._getData.bind(this))
+        // if already have a token and developing locally, go ahead and fetch user info
+        if (typeof window !== 'undefined' && window.location.hostname == 'localhost') {
+            console.log("==== Using existing token to look up user")
+            this._getData()
+        }
     }
 
     _getData () {
