@@ -31,18 +31,20 @@ class Grid extends React.Component {
             // {headerName: "Product / Destination", cellRenderer: 'group', comparator: this.sortGroupBy.bind(this), checkboxSelection: true},
             // {headerName: "Bids", cellRenderer: 'group'}, // with two columns configured as cellRenderer: 'group', but behave the same (get the same display values)
             {headerName: "Bids", cellRenderer: 'group', checkboxSelection: true},
-            // {headerName: "Product / Destination", cellRenderer: 'group', sort: 'asc'},
-            // {headerName: 'Product', rowGroupIndex: 0, field: 'commodityId', hide: true},
             // {headerName: 'Product', rowGroupIndex: 0, valueGetter: this.gridGetCommodityName.bind(this), hide: true},
-            {headerName: 'Product', valueGetter: this.gridGetCommodityName.bind(this), enableRowGroup: true},
-            // {headerName: 'Country', field: 'deliveryCountryCode'},
-            // {headerName: 'Country', rowGroupIndex: 1, valueGetter: this.gridGetCountryName.bind(this), hide: true},
-            {headerName: 'Country', valueGetter: this.gridGetCountryName.bind(this), enableRowGroup: true},
+            {headerName: 'Product', valueGetter: this.gridGetCommodityName.bind(this), sort: 'asc'},
+            // {headerName: 'Product', valueGetter: this.gridGetCommodityName.bind(this), rowGroupIndex: 0, enableRowGroup: true},
+            {headerName: 'Description', valueGetter: this.gridCalcDescription.bind(this), sort: 'asc', onCellClicked: function(params) {
+                params.node.expanded = !params.node.expanded;
+                params.api.onGroupExpandedOrCollapsed();
+            }},
+            {headerName: 'Country', valueGetter: this.gridGetCountryName.bind(this), sort: 'asc'},
+            // {headerName: 'Country', valueGetter: this.gridGetCountryName.bind(this), rowGroupIndex: 1, enableRowGroup: true},
             // {headerName: 'Region', field: 'deliveryRegionCode'},
-            {headerName: 'Region', valueGetter: this.gridGetRegionName.bind(this), sort: 'asc', enableRowGroup: true},
+            {headerName: 'Region', valueGetter: this.gridGetRegionName.bind(this), sort: 'asc'},
             {headerName: 'City', field: 'deliveryCity', sort: 'asc'},
             {headerName: 'Incoterm', field: 'incoterm'},
-            {headerName: 'Description', valueGetter: this.gridCalcDescription.bind(this), sort: 'asc'},
+
             {headerName: 'Quantity', field: 'qty', cellStyle: {'text-align': 'right'}},
             ],
             rowData: Object.values(this.props.tenders)
@@ -165,7 +167,7 @@ class Grid extends React.Component {
                     // output done by ag-grid for product and country
                     // fullWidthCellRenderer={this.DetailPanelCellRenderer.bind(this)}
                     // fullWidthCellRenderer={DetailPanelCellRenderer}
-                    fullWidthCellRendererFramework={BidsGrid}
+                    fullWidthCellRendererFramework={BidsGrid} // React Component
                     // onRowSelected={this.onRowSelected.bind(this)}
                     // onCellClicked={this.onCellClicked.bind(this)}
 
@@ -181,12 +183,14 @@ class Grid extends React.Component {
                     // rowData={this.props.rowData}
 
                     // or provide props the old way with no binding
-                    groupsUseEntireRow="true"
-                    groupSuppressAutoColumn="true"
-                    rowSelection="multiple"
+                    // groupsUseEntireRow="true"
+                    // groupSuppressAutoColumn="true"
+                    // rowSelection="multiple"
                     enableSorting={true}
                     enableFilter={true}
-                    rowHeight="22"
+                    floatingFilter={true}
+                    suppressMenuFilterPanel={true}
+                    // rowHeight="22"
                     enableColResize={true}
                     getNodeChildDetails={this.getNodeChildDetails}
                 />
